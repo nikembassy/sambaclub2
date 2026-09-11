@@ -1,7 +1,12 @@
 name: Build Android APK
 
 on:
+  push:
+    branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -18,7 +23,6 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
           channel: 'stable'
           cache: true
 
@@ -27,37 +31,9 @@ jobs:
           rm -rf android
           flutter create --project-name sambaclub --platforms android .
 
-      - name: Overwrite pubspec.yaml with correct dependencies
+      - name: Fix minSdkVersion to 23
         run: |
-          cat << 'EOF' > pubspec.yaml
-          name: sambaclub
-          description: A Bigo-Live-style live streaming and social app in Flutter.
-          publish_to: 'none'
-          version: 1.0.0+1
-
-          environment:
-            sdk: '>=3.0.0 <4.0.0'
-
-          dependencies:
-            flutter:
-              sdk: flutter
-            flutter_webrtc: '^0.11.6+hotfix.1'
-            web_socket_channel: ^2.4.0
-
-          dev_dependencies:
-            flutter_test:
-              sdk: flutter
-            flutter_lints: ^3.0.0
-
-          flutter:
-            uses-material-design: true
-            assets:
-              - assets/
-          EOF
-
-      - name: Fix minSdkVersion to 21
-        run: |
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || echo "minSdkVersion already set"
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle || echo "minSdkVersion already set"
 
       - name: Install dependencies
         run: flutter pub get
