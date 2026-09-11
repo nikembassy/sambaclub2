@@ -1,0 +1,32 @@
+name: sambaclub
+description: Sambaclub - a Bigo-Live-style live streaming and social app (black & gold theme).
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  # Lascia respirare il progetto: Flutter stable sceglie la combinazione giusta.
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider:            # stato dell'app
+  image_picker:        # foto profilo dalla galleria
+  file_picker:         # scelta di un file audio
+  record:              # nota vocale dal microfono
+  just_audio:          # riproduzione dei messaggi audio
+  path_provider:       # cartella scrivibile per le registrazioni
+  permission_handler:  # permessi microfono/media a runtime
+
+  # --- Live reale (WebRTC + signaling col server Sambaclub) ---
+  web_socket_channel:  # frame JSON su ws://
+  flutter_webrtc:      # camera/microfono + RTCPeerConnection
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints:
+
+flutter:
+  uses-material-design: true
