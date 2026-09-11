@@ -1,32 +1,42 @@
-name: sambaclub
-description: Sambaclub - a Bigo-Live-style live streaming and social app (black & gold theme).
-publish_to: "none"
-version: 1.0.0+1
+name: Build Android APK
 
-environment:
-  # Lascia respirare il progetto: Flutter stable sceglie la combinazione giusta.
-  sdk: ">=3.0.0 <4.0.0"
+on:
+  workflow_dispatch:
 
-dependencies:
-  flutter:
-    sdk: flutter
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  provider:            # stato dell'app
-  image_picker:        # foto profilo dalla galleria
-  file_picker:         # scelta di un file audio
-  record:              # nota vocale dal microfono
-  just_audio:          # riproduzione dei messaggi audio
-  path_provider:       # cartella scrivibile per le registrazioni
-  permission_handler:  # permessi microfono/media a runtime
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-  # --- Live reale (WebRTC + signaling col server Sambaclub) ---
-  web_socket_channel:  # frame JSON su ws://
-  flutter_webrtc:      # camera/microfono + RTCPeerConnection
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints:
+      - name: Generate Android scaffold
+        run: flutter create --project-name sambaclub --platforms android .
 
-flutter:
-  uses-material-design: true
+      - name: Fix minSdkVersion to 21
+        run: |
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || echo "minSdkVersion already set"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sambaclub-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
