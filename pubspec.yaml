@@ -22,8 +22,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android scaffold
-        run: flutter create --project-name sambaclub --platforms android .
+      - name: Generate Android scaffold only if missing
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --project-name sambaclub --platforms android .
+          fi
 
       - name: Fix minSdkVersion to 21
         run: |
