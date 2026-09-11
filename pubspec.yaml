@@ -27,6 +27,34 @@ jobs:
           rm -rf android
           flutter create --project-name sambaclub --platforms android .
 
+      - name: Overwrite pubspec.yaml with correct dependencies
+        run: |
+          cat << 'EOF' > pubspec.yaml
+          name: sambaclub
+          description: A Bigo-Live-style live streaming and social app in Flutter.
+          publish_to: 'none'
+          version: 1.0.0+1
+
+          environment:
+            sdk: '>=3.0.0 <4.0.0'
+
+          dependencies:
+            flutter:
+              sdk: flutter
+            flutter_webrtc: '^0.11.6+hotfix.1'
+            web_socket_channel: ^2.4.0
+
+          dev_dependencies:
+            flutter_test:
+              sdk: flutter
+            flutter_lints: ^3.0.0
+
+          flutter:
+            uses-material-design: true
+            assets:
+              - assets/
+          EOF
+
       - name: Fix minSdkVersion to 21
         run: |
           sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || echo "minSdkVersion already set"
