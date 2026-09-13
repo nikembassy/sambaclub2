@@ -1,28 +1,56 @@
-name: sambaclub
-description: "Sambaclub - live streaming app."
-publish_to: 'none'
-version: 1.0.0+1
+name: Build Android APK
 
-environment:
-  sdk: ">=3.12.0 <4.0.0"
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
-dependencies:
-  flutter:
-    sdk: flutter
-  provider: ^6.1.5
-  image_picker: ^1.2.3
-  file_picker: ^8.0.0
-  record: ^7.1.1
-  just_audio: ^0.10.6
-  path_provider: ^2.1.6
-  permission_handler: ^11.3.0
-  web_socket_channel: ^3.0.3
-  flutter_webrtc: ^1.6.2
+permissions:
+  contents: read
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^6.0.0
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-flutter:
-  uses-material-design: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Clean and create android scaffold
+        run: |
+          rm -rf android
+          flutter create --project-name sambaclub --platforms android .
+
+      - name: Fix minSdkVersion to 23
+        run: |
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 23/' android/app/build.gradle.kts || true
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/' android/app/build.gradle || true
+
+      - name: Fix compileSdk to 36
+        run: |
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts || true
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/' android/app/build.gradle || true
+
+      - name: Show build.gradle for debug
+        run: |
+          echo "=== build.gradle.kts ===" && cat android/app/build.gradle.kts || true
+          echo "=== build.gradle ===" && cat android/app/build.gradle || true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sambaclub-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
